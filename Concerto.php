@@ -72,8 +72,9 @@ class Concerto
 
     public function Show(): array
     {
-        $dbconnection = ConnectionManagement::ConnectToDB('config.txt');
-        $values = ConnectionManagement::Select($dbconnection->lastInsertId(), 'config.txt',$dbconnection);
+        $filename = 'config.txt';
+        $dbconnection = ConnectionManagement::ConnectToDB($filename);
+        $values = ConnectionManagement::Select($filename,$dbconnection);
         ConnectionManagement::CloseConnection($dbconnection);
         return $values;
     }

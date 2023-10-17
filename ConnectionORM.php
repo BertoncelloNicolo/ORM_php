@@ -43,20 +43,26 @@ class ConnectionManagement
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
+        $codice = $dati['codice'];
+        $titolo = $dati['titolo'];
+        $descrizione = $dati['descrizione'];
+        $data = $dati['data'];
+        $data = new DateTime($data);
+        $dataformatted = $data->format('Y-m-d H:i:s');
         try {
-            $codice = $dati['codice'];
-            $titolo = $dati['titolo'];
-            $descrizione = $dati['descrizione'];
-            $data = $dati['data'];
-            $dataFormattata = $data->format('Y-m-d H:i:s');
-            // Query preparata con il binding dei parametri
-            $query = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data) VALUES (:codice, :titolo, :descrizione, $dataFormattata))";
-            $stmt = $dbconnection->prepare($query);
-            // Binding dei parametri
-            $stmt->bindParam(':codice', $codice, PDO::PARAM_INT);
-            $stmt->bindParam(':titolo', $titolo, PDO::PARAM_STR);
-            $stmt->bindParam(':descrizione', $descrizione, PDO::PARAM_STR);
-            $stmt->execute();
+    
+    // Usare la data formattata nella query
+    $sql = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data) VALUES (:codice, :titolo, :descrizione, :data)";
+    $stmt = $dbconnection->prepare($sql);
+    
+    // Esegui il bind dei parametri
+    $stmt->bindParam(':codice', $codice, PDO::PARAM_INT);
+    $stmt->bindParam(':titolo', $titolo, PDO::PARAM_STR);
+    $stmt->bindParam(':descrizione', $descrizione, PDO::PARAM_STR);
+    $stmt->bindParam(':data', $dataformatted , PDO::PARAM_STR);
+
+    // Esegui la query preparata
+    $stmt->execute();
             return true;
         } catch (Exception $e) {
             return false;
@@ -71,19 +77,17 @@ class ConnectionManagement
         $user = $config['user'];
         try {
             $sql = "CREATE DATABASE IF NOT EXISTS $dbname;
-            GRANT Create ON $dbname.* TO $user@$host;
-            GRANT Alter ON $dbname.* TO $user@$host;
-            GRANT Insert ON $dbname.* TO $user@$host;
-            GRANT Select ON $dbname.* TO $user@$host;";
-            $dbconnection->query($sql);
-
-            $sql = "CREATE TABLE IF NOT EXISTS $dbname.$tbname(
+            CREATE TABLE IF NOT EXISTS $dbname.$tbname(
             id int not null auto_increment primary key,
             {$campi[0]} int,
             {$campi[1]} varchar(50),
             {$campi[2]} varchar(50),
             {$campi[3]} varchar(50)
-            );";
+            );
+            GRANT Create ON $dbname.* TO $user@$host;
+            GRANT Alter ON $dbname.* TO $user@$host;
+            GRANT Insert ON $dbname.* TO $user@$host;
+            GRANT Select ON $dbname.* TO $user@$host;";
             $dbconnection->query($sql);
             return true;
         } catch (Exception $e) {
@@ -91,26 +95,21 @@ class ConnectionManagement
         }
     }
 
-    public static function Select(int $id, string $filename, PDO $dbconnection): array
+    public static function Select(string $filename, PDO $dbconnection): array
     {
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
-        try {
-            $sql = "SELECT * FROM $dbname.$tbname WHERE id = $id-1";
+            $sql = "SELECT * FROM $dbname.$tbname";
+            echo "$sql\n";
             $stmt = $dbconnection->query($sql);
             $record = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($record) {
-                $codice = $record['codice'];
+              $codice = $record['codice'];
                 $titolo = $record['titolo'];
                 $descrizione = $record['descrizione'];
-                $data = $record['data'];
-            }
-
-            return $valori = ['codice' => $codice,'titolo'=> $titolo, 'descrizione'=> $descrizione, 'data'=> $data];
-        } catch (Exception $e) {
-            return null;
-        }
+                $data = $record['data']; 
+             return ['codice' => $codice, 'titolo' => $titolo, 'descrizione' => $descrizione, 'data' => $data];
+        
     }
 
     private static function ObtainConfig(string $nome_file): array

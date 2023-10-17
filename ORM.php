@@ -24,5 +24,5 @@ $dati = [
     'data' => new DateTime(),
 ];
 $concerto = new Concerto($dati);
-
 Concerto::Create($dati, $filename);
+Concerto::Create($concerto->show(), $filename);
