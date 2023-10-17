@@ -1,0 +1,5 @@
+host=localhost
+dbname=db
+user=concerti
+password=password
+table=concerti

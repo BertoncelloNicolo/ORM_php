@@ -58,17 +58,11 @@ class Concerto
         $this->data = $data;
     }
 
-    static public function Create(array $dati): Concerto
+    static public function Create(array $dati, string $filename): Concerto
     {
         try {
-            $dbconnection = ConnectionManagement::ConnectToDB();
-            $sql = "INSERT INTO prova.concerti (codice, titolo, descrizione, data) VALUES (
-                " . $dati['codice'] . ",
-                '" . $dati['titolo'] . "',
-                '" . $dati['descrizione'] . "',
-                '" . $dati['data']->format('Y-m-d H:i:s') . "'
-            )";
-            ConnectionManagement::Insert($sql, $dbconnection);
+            $dbconnection = ConnectionManagement::ConnectToDB($filename);
+            ConnectionManagement::Insert($dati, $filename, $dbconnection);
             ConnectionManagement::CloseConnection($dbconnection);
             return new Concerto($dati);
         } catch (Exception $e) {
@@ -78,11 +72,9 @@ class Concerto
 
     public function Show(): array
     {
-        return $dati = [
-            'codice' => $this->__getCodice(),
-            'titolo' => $this->__getTitolo(),
-            'descrizione' => $this->__getDescrizione(),
-            'data' => $this->__getData(),
-        ];
+        $dbconnection = ConnectionManagement::ConnectToDB('config.txt');
+        $values = ConnectionManagement::Select($dbconnection->lastInsertId(), 'config.txt',$dbconnection);
+        ConnectionManagement::CloseConnection($dbconnection);
+        return $values;
     }
 }

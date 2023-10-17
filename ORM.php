@@ -2,6 +2,21 @@
 
 require './Concerto.php';
 
+//CREAZIONE DATABASE E TABELLA
+$campi = [
+    'codice',
+    'titolo',
+    'descrizione',
+    'data'
+];
+$database_name = 'db_prova';
+$table_name = 'concerti';
+$filename = "config.txt";
+$dbconnection = ConnectionManagement::ConnectToHost($filename);
+ConnectionManagement::Create($filename, $campi, $dbconnection);
+$dbconnection = ConnectionManagement::ConnectToDB($filename);
+ConnectionManagement::CloseConnection($dbconnection);
+
 $dati = [
     'codice' => 1234,
     'titolo' => 'Concerto1',
@@ -10,4 +25,4 @@ $dati = [
 ];
 $concerto = new Concerto($dati);
 
-Concerto::Create($concerto->show());
+Concerto::Create($dati, $filename);
