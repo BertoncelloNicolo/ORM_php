@@ -27,7 +27,7 @@ class ConnectionManagement
         try {
             $dbconnection = new PDO("mysql:host=$host", $user, $password, array(
                 PDO::ATTR_PERSISTENT => $persistent
-            )); //instaura una connessione con il database "concerti" su localhost, in base al valore di $persistent la connessione sarà persistente o no
+            )); //instaura una connessione con il database, in base al valore di $persistent la connessione sarà persistente o no
             return $dbconnection;
         } catch (Exception $e) {
             return null;
@@ -43,26 +43,17 @@ class ConnectionManagement
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
-        $codice = $dati['codice'];
-        $titolo = $dati['titolo'];
-        $descrizione = $dati['descrizione'];
-        $data = $dati['data'];
-        $data = new DateTime($data);
-        $dataformatted = $data->format('Y-m-d H:i:s');
         try {
-    
-    // Usare la data formattata nella query
-    $sql = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data) VALUES (:codice, :titolo, :descrizione, :data)";
-    $stmt = $dbconnection->prepare($sql);
-    
-    // Esegui il bind dei parametri
-    $stmt->bindParam(':codice', $codice, PDO::PARAM_INT);
-    $stmt->bindParam(':titolo', $titolo, PDO::PARAM_STR);
-    $stmt->bindParam(':descrizione', $descrizione, PDO::PARAM_STR);
-    $stmt->bindParam(':data', $dataformatted , PDO::PARAM_STR);
+            $sql = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data) VALUES (:codice, :titolo, :descrizione, :data)";
+            $stmt = $dbconnection->prepare($sql);
 
-    // Esegui la query preparata
-    $stmt->execute();
+            $stmt->bindParam(':codice', $dati['codice']);
+            $stmt->bindParam(':titolo', $dati['titolo']);
+            $stmt->bindParam(':descrizione', $dati['descrizione']);
+            $stmt->bindParam(':data', $dati['data']);
+
+
+            $stmt->execute();
             return true;
         } catch (Exception $e) {
             return false;
@@ -100,16 +91,15 @@ class ConnectionManagement
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
-            $sql = "SELECT * FROM $dbname.$tbname";
-            echo "$sql\n";
-            $stmt = $dbconnection->query($sql);
-            $record = $stmt->fetch(PDO::FETCH_ASSOC);
-              $codice = $record['codice'];
-                $titolo = $record['titolo'];
-                $descrizione = $record['descrizione'];
-                $data = $record['data']; 
-             return ['codice' => $codice, 'titolo' => $titolo, 'descrizione' => $descrizione, 'data' => $data];
-        
+        $id = $dbconnection->lastInsertId();
+        $sql = "SELECT * FROM $dbname.$tbname WHERE id = $id";
+        $stmt = $dbconnection->query($sql);
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+        $codice = $record['codice'];
+        $titolo = $record['titolo'];
+        $descrizione = $record['descrizione'];
+        $data = $record['data'];
+        return ['codice' => $codice, 'titolo' => $titolo, 'descrizione' => $descrizione, 'data' => $data];
     }
 
     private static function ObtainConfig(string $nome_file): array

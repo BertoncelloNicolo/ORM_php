@@ -4,7 +4,6 @@ include 'ConnectionORM.php';
 
 class Concerto
 {
-    private static int $id = 0;
     private int $codice;
     private string $titolo;
     private string $descrizione;
@@ -12,7 +11,6 @@ class Concerto
 
     public function __construct(array $dati)
     {
-        self::$id++;
         $this->__setCodice($dati['codice']);
         $this->__setTitolo($dati['titolo']);
         $this->__setDescrizione($dati['descrizione']);
@@ -53,9 +51,9 @@ class Concerto
         return $this->data;
     }
 
-    private function __setData(DateTime $data)
+    private function __setData(string $data)
     {
-        $this->data = $data;
+        $this->data = new DateTime($data);
     }
 
     static public function Create(array $dati, string $filename): Concerto

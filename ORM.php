@@ -21,8 +21,8 @@ $dati = [
     'codice' => 1234,
     'titolo' => 'Concerto1',
     'descrizione' => 'molto bello',
-    'data' => new DateTime(),
+    'data' => "2023-10-17",
 ];
 $concerto = new Concerto($dati);
 Concerto::Create($dati, $filename);
-Concerto::Create($concerto->show(), $filename);
+//Concerto::Create($concerto->show(), $filename);
