@@ -7,14 +7,16 @@ class Concerto
     private int $codice;
     private string $titolo;
     private string $descrizione;
-    private DateTime $data;
+    private $data_concerto;
 
-    public function __construct(array $dati)
+    public function __construct(array $dati = null)
     {
-        $this->__setCodice($dati['codice']);
-        $this->__setTitolo($dati['titolo']);
-        $this->__setDescrizione($dati['descrizione']);
-        $this->__setData($dati['data']);
+        if ($dati != null) {
+            $this->__setCodice($dati['codice']);
+            $this->__setTitolo($dati['titolo']);
+            $this->__setDescrizione($dati['descrizione']);
+            $this->__setData($dati['data_concerto']);
+        }
     }
     private function __setCodice(int $codice)
     {
@@ -48,12 +50,18 @@ class Concerto
 
     private function __getData(): DateTime
     {
-        return $this->data;
+        if ($this->data_concerto instanceof DateTime)
+            return $this->data_concerto;
+        else
+            return new DateTime($this->data_concerto);
     }
 
-    private function __setData(string $data)
+    private function __setData($data_concerto)
     {
-        $this->data = new DateTime($data);
+        if ($data_concerto instanceof DateTime)
+            $this->data_concerto = $data_concerto;
+        else
+            $this->data_concerto = new DateTime($data_concerto);
     }
 
     static public function Create(array $dati, string $filename): Concerto
@@ -68,12 +76,20 @@ class Concerto
         }
     }
 
-    public function Show(): array
+    public function Show(string $filename): Concerto
     {
-        $filename = 'config.txt';
         $dbconnection = ConnectionManagement::ConnectToDB($filename);
-        $values = ConnectionManagement::Select($filename,$dbconnection);
+        $obj_found = ConnectionManagement::Select($filename, $dbconnection);
         ConnectionManagement::CloseConnection($dbconnection);
-        return $values;
+        return $obj_found;
+    }
+
+    public static function ToArray(Concerto $object): array
+    {
+        $array = array();
+        foreach ($object as $key => $value) {
+            $array[$key] = $value;
+        }
+        return $array;
     }
 }

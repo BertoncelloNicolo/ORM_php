@@ -7,22 +7,24 @@ $campi = [
     'codice',
     'titolo',
     'descrizione',
-    'data'
+    'data_concerto'
 ];
 $database_name = 'db_prova';
 $table_name = 'concerti';
 $filename = "config.txt";
 $dbconnection = ConnectionManagement::ConnectToHost($filename);
-ConnectionManagement::Create($filename, $campi, $dbconnection);
+ConnectionManagement::Create($campi, $filename, $dbconnection);
 $dbconnection = ConnectionManagement::ConnectToDB($filename);
 ConnectionManagement::CloseConnection($dbconnection);
 
+$data_concerto = new DateTime('now');
 $dati = [
     'codice' => 1234,
     'titolo' => 'Concerto1',
     'descrizione' => 'molto bello',
-    'data' => "2023-10-17",
+    'data_concerto' => $data_concerto,
 ];
 $concerto = new Concerto($dati);
 Concerto::Create($dati, $filename);
-//Concerto::Create($concerto->show(), $filename);
+$array_values = Concerto::ToArray($concerto->show($filename));
+Concerto::Create($array_values, $filename);

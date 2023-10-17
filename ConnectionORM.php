@@ -43,14 +43,20 @@ class ConnectionManagement
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
+        $data = $dati['data_concerto'];
         try {
-            $sql = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data) VALUES (:codice, :titolo, :descrizione, :data)";
+            $sql = "INSERT INTO $dbname.$tbname (codice, titolo, descrizione, data_concerto) VALUES (:codice, :titolo, :descrizione, :data_concerto)";
             $stmt = $dbconnection->prepare($sql);
 
             $stmt->bindParam(':codice', $dati['codice']);
             $stmt->bindParam(':titolo', $dati['titolo']);
             $stmt->bindParam(':descrizione', $dati['descrizione']);
-            $stmt->bindParam(':data', $dati['data']);
+            if ($data instanceof DateTime) {
+                $dataformatted = $data->format('Y-m-d H:i:s');
+                $stmt->bindParam(':data_concerto', $dataformatted);
+            } else
+                $stmt->bindParam(':data_concerto', $data);
+
 
 
             $stmt->execute();
@@ -59,13 +65,14 @@ class ConnectionManagement
             return false;
         }
     }
-    public static function Create(string $filename, array $campi, PDO $dbconnection): bool
+    public static function Create(array $campi, string $filename, PDO $dbconnection): bool
     {
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
         $host = $config['host'];
         $user = $config['user'];
+        $password = $config['password'];
         try {
             $sql = "CREATE DATABASE IF NOT EXISTS $dbname;
             CREATE TABLE IF NOT EXISTS $dbname.$tbname(
@@ -73,12 +80,8 @@ class ConnectionManagement
             {$campi[0]} int,
             {$campi[1]} varchar(50),
             {$campi[2]} varchar(50),
-            {$campi[3]} varchar(50)
-            );
-            GRANT Create ON $dbname.* TO $user@$host;
-            GRANT Alter ON $dbname.* TO $user@$host;
-            GRANT Insert ON $dbname.* TO $user@$host;
-            GRANT Select ON $dbname.* TO $user@$host;";
+            {$campi[3]} DateTime
+            );";
             $dbconnection->query($sql);
             return true;
         } catch (Exception $e) {
@@ -86,25 +89,21 @@ class ConnectionManagement
         }
     }
 
-    public static function Select(string $filename, PDO $dbconnection): array
+    public static function Select(string $filename, PDO $dbconnection): Concerto
     {
         $config = ConnectionManagement::ObtainConfig($filename);
         $dbname = $config['dbname'];
         $tbname = $config['table'];
         $id = $dbconnection->lastInsertId();
-        $sql = "SELECT * FROM $dbname.$tbname WHERE id = $id";
-        $stmt = $dbconnection->query($sql);
-        $record = $stmt->fetch(PDO::FETCH_ASSOC);
-        $codice = $record['codice'];
-        $titolo = $record['titolo'];
-        $descrizione = $record['descrizione'];
-        $data = $record['data'];
-        return ['codice' => $codice, 'titolo' => $titolo, 'descrizione' => $descrizione, 'data' => $data];
+        $sql = $dbconnection->prepare("select * from $dbname.$tbname where id=:id");
+        $sql->bindParam(":id", $id);
+        $sql->execute();
+        return $sql->fetchObject('Concerto');
     }
 
-    private static function ObtainConfig(string $nome_file): array
+    private static function ObtainConfig(string $filename): array
     {
-        $config = file_get_contents($nome_file); //legge file
+        $config = file_get_contents($filename); //legge file
         $configLines = explode("\n", $config); //lo divide in base a \n
         $connectionInfo = [];
         foreach ($configLines as $line) {
