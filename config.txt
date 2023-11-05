@@ -1,5 +1,5 @@
 host=localhost
-dbname=db
 user=concerti
 password=password
+database=db
 table=concerti

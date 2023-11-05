@@ -1,0 +1,19 @@
+[
+    {
+      "codice": "1",
+      "nome": "Sala1",
+      "capienza": "10"
+      
+    },
+    {
+      "codice": "2",
+      "nome": "Sala2",
+      "capienza": "20"
+    },
+    {
+      "codice": "3",
+      "nome": "Sala3",
+      "capienza": "30"
+     
+    }
+  ]
